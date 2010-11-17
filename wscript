@@ -73,17 +73,26 @@ def package(ctx):
 
 # TODO update this for downloading Lua source code
 def _prepare(args):
-    print('[TODO] implement for Lua')
 
-    import subprocess, urllib2
+    import urllib2
     from contextlib import closing
 
     # download utilities if not already present
     if not os.path.exists(utils_root):
-        with closing(urllib2.urlopen(bsdtar['url'])) as f, open(bsdtar['local_zip_name'], 'wb') as b:
+        with closing(urllib2.urlopen(bsdtar['url'])) as f, open(bsdtar['local_name'], 'wb') as b:
             b.write(f.read())
         print('-> downloaded basic-bsdtar from %s' % bsdtar['url'])
-        _zip_extract(bsdtar['local_zip_name'], bsdtar['exe'], utils_root)
+        _zip_extract(bsdtar['local_name'], bsdtar['exe'], utils_root)
+
+    # download and extract Lua source if local source directory (src_root) is empty
+    if not os.path.exists(src_root) or not os.listdir(src_root):
+        with closing(urllib2.urlopen(lua['url'])) as f, open(lua['local_name'], 'wb') as u:
+            u.write(f.read())
+        print('-> downloaded Lua source from %s' % lua['url'])
+        _bsdtar_extract(lua['local_name'])
+
+    else:
+        print('-> using existing Lua source in project directory')
 
     # download waf if not already present
     if not os.path.exists('waf'):
@@ -91,27 +100,21 @@ def _prepare(args):
             w.write(f.read())
         print('-> downloaded waf from %s' % waf['url'])
 
-'''
-    # get libyaml source from SVN if local source directory (src_root) is empty
-    if not os.listdir(src_root):
-        if not subprocess.call('%s %s %s > NUL 2>&1' % (vcs['exe'], vcs['chk'], vcs['url']), shell=True):
-            if not os.path.exists('%s/.svn' % src_root):
-                if not subprocess.call([ vcs['exe'], vcs['co'], vcs['url'], src_root ]):
-                    print('-> checked out libyaml source from %s' % vcs['url'])
-            elif os.path.exists('%s/.svn' % src_root) and os.path.isdir('%s/.svn' % src_root):
-                if not subprocess.call([ vcs['exe'], vcs['up'] ]):
-                    print('-> updated libyaml source from %s' % vcs['url'])
-        else:
-            print('-> unable to connect to %s' % vcs['url'])
-    else:
-        print('-> using existing libyaml source in project directory')
-'''
 
 def _zip_extract(zip_file, item, target):
     import zipfile
     with zipfile.ZipFile(zip_file, 'r') as zip:
         zip.extract(item, target)
     print('-> extracted %s from %s into %s' % (item, zip_file, target))
+
+def _bsdtar_extract(archive, strip_count=1):
+    import subprocess
+    cmd = '-x --strip-components %s --include="*/src" --include="*/etc"' % strip_count
+    if not subprocess.call(r'%s\%s %s -f %s' % (utils_root, bsdtar['exe'], cmd, lua['local_name']), shell=True):
+        pass
+    else:
+        pass
+
 
 if __name__ == '__main__':
     if sys.hexversion < PY_MIN_VERSION:
@@ -134,24 +137,19 @@ where TASK is one of:
         print(USAGE)
         sys.exit(1)
 
-    # TODO update for Lua source
-    '''
-    vcs = {
-            'exe' : 'svn',
-            'co'  : 'co',
-            'up'  : 'up',
-            'chk' : 'info',
-            'url' : 'http://svn.pyyaml.org/libyaml/tags/%s' % VERSION
-          }
-    '''
     bsdtar = {
                 'url' : 'http://downloads.sourceforge.net/mingw/%s' % BSDTAR_FILE,
-                'local_zip_name' : 'basic-bsdtar.zip',
+                'local_name' : 'basic-bsdtar.zip',
                 'exe' : 'basic-bsdtar.exe',
              }
 
+    lua = {
+            'url' : 'http://www.lua.org/ftp/lua-%s.tar.gz' % VERSION,
+            'local_name' : 'lua-%s.tar.gz' % VERSION,
+          }
+
     waf = {
-            'url' : 'http://waf.googlecode.com/files/waf-%s' % WAF_VERSION
+            'url' : 'http://waf.googlecode.com/files/waf-%s' % WAF_VERSION,
           }
 
     task = args[1].lower()
