@@ -8,6 +8,7 @@ import sys
 
 PY_MIN_VERSION = 0x020700F0
 WAF_VERSION = '1.6.1'
+BSDTAR_FILE = 'basic-bsdtar-2.8.3-1-mingw32-bin.zip'
 
 APPNAME = 'lua'
 VERSION = '5.1.4'
@@ -15,6 +16,7 @@ VERSION = '5.1.4'
 top = '.'
 src_root = 'src'
 out = 'build'
+utils_root = 'utils'
 
 def options(opt):
     opt.load('compiler_c')
@@ -72,15 +74,24 @@ def package(ctx):
 # TODO update this for downloading Lua source code
 def _prepare(args):
     print('[TODO] implement for Lua')
-'''
+
     import subprocess, urllib2
     from contextlib import closing
+
+    # download utilities if not already present
+    if not os.path.exists(utils_root):
+        with closing(urllib2.urlopen(bsdtar['url'])) as f, open('basic-bsdtar.zip', 'wb') as b:
+            b.write(f.read())
+        print('-> downloaded basic-bsdtar from %s' % bsdtar['url'])
+        _zip_extract('basic-bsdtar.zip', 'basic-bsdtar.exe', utils_root)
+
     # download waf if not already present
     if not os.path.exists('waf'):
         with closing(urllib2.urlopen(waf['url'])) as f, open('waf', 'wb') as w:
             w.write(f.read())
         print('-> downloaded waf from %s' % waf['url'])
 
+'''
     # get libyaml source from SVN if local source directory (src_root) is empty
     if not os.listdir(src_root):
         if not subprocess.call('%s %s %s > NUL 2>&1' % (vcs['exe'], vcs['chk'], vcs['url']), shell=True):
@@ -100,6 +111,7 @@ def _zip_extract(zip_file, item, target):
     import zipfile
     with zipfile.ZipFile(zip_file, 'r') as zip:
         zip.extract(item, target)
+    print('-> extracted %s from %s into %s' % (item, zip_file, target))
 
 if __name__ == '__main__':
     if sys.hexversion < PY_MIN_VERSION:
@@ -132,6 +144,9 @@ where TASK is one of:
             'url' : 'http://svn.pyyaml.org/libyaml/tags/%s' % VERSION
           }
     '''
+    bsdtar = {
+                'url' : 'http://downloads.sourceforge.net/mingw/%s' % BSDTAR_FILE
+             }
 
     waf = {
             'url' : 'http://waf.googlecode.com/files/waf-%s' % WAF_VERSION
