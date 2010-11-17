@@ -1,4 +1,6 @@
 .lock-waf*
 waf*
+utils/
 build/
 src/
+*.zip
