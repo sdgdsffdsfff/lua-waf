@@ -96,6 +96,11 @@ def _prepare(args):
         print('-> using existing libyaml source in project directory')
 '''
 
+def _zip_extract(zip_file, item, target):
+    import zipfile
+    with zipfile.ZipFile(zip_file, 'r') as zip:
+        zip.extract(item, target)
+
 if __name__ == '__main__':
     if sys.hexversion < PY_MIN_VERSION:
         print('At least Python v%d.%d.%d required, exiting...' % (
