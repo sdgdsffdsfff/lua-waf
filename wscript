@@ -61,14 +61,13 @@ def build(bld):
 # TODO genericize the version numbers
 def package(ctx):
     import zipfile
-    zip = zipfile.ZipFile('%s-%s.zip' % (APPNAME, VERSION), 'w', zipfile.ZIP_DEFLATED)
-    for f in ['build/liblua51.def', 'build/lua51.dll']:
-        zip.write(f, 'bin/%s' % os.path.basename(f))
-    zip.write('%s/lua.h' % src_root, 'include/lua.h')
-    zip.write('%s/lualib.h' % src_root, 'include/lualib.h')
-    zip.write('%s/lauxlib.h' % src_root, 'include/lauxlib.h')
-    zip.write('build/liblua51.dll.a', 'lib/liblua51.dll.a')
-    zip.close()
+    with zipfile.ZipFile('%s-%s.zip' % (APPNAME, VERSION), 'w', zipfile.ZIP_DEFLATED) as zip:
+        for f in ['build/liblua51.def', 'build/lua51.dll', 'build/lua.exe']:
+            zip.write(f, 'bin/%s' % os.path.basename(f))
+        zip.write('%s/lua.h' % src_root, 'include/lua.h')
+        zip.write('%s/lualib.h' % src_root, 'include/lualib.h')
+        zip.write('%s/lauxlib.h' % src_root, 'include/lauxlib.h')
+        zip.write('build/liblua51.dll.a', 'lib/liblua51.dll.a')
 
 # TODO update this for downloading Lua source code
 def _prepare(args):
