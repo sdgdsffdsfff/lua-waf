@@ -80,10 +80,10 @@ def _prepare(args):
 
     # download utilities if not already present
     if not os.path.exists(utils_root):
-        with closing(urllib2.urlopen(bsdtar['url'])) as f, open('basic-bsdtar.zip', 'wb') as b:
+        with closing(urllib2.urlopen(bsdtar['url'])) as f, open(bsdtar['local_zip_name'], 'wb') as b:
             b.write(f.read())
         print('-> downloaded basic-bsdtar from %s' % bsdtar['url'])
-        _zip_extract('basic-bsdtar.zip', 'basic-bsdtar.exe', utils_root)
+        _zip_extract(bsdtar['local_zip_name'], bsdtar['exe'], utils_root)
 
     # download waf if not already present
     if not os.path.exists('waf'):
@@ -145,7 +145,9 @@ where TASK is one of:
           }
     '''
     bsdtar = {
-                'url' : 'http://downloads.sourceforge.net/mingw/%s' % BSDTAR_FILE
+                'url' : 'http://downloads.sourceforge.net/mingw/%s' % BSDTAR_FILE,
+                'local_zip_name' : 'basic-bsdtar.zip',
+                'exe' : 'basic-bsdtar.exe',
              }
 
     waf = {
