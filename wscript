@@ -12,6 +12,7 @@ BSDTAR_FILE = 'basic-bsdtar-2.8.3-1-mingw32-bin.zip'
 
 APPNAME = 'lua'
 VERSION = '5.1.4'
+MAJOR_MINOR = VERSION.translate(None, '.')[:2]
 
 top = '.'
 src_root = 'src'
@@ -41,36 +42,41 @@ def build(bld):
                     excl=[ '%s/lua.c' % src_root, '%s/luac.c' % src_root ]
                     )
 
-    # create yaml.dll and its import lib and def files
-    # TODO genericize the version numbers
+    # create luaXY.dll and its import lib and def files
     bld.shlib(
         source = lib_sources,
-        target = 'lua51',
-        linkflags = '-Wl,--output-def,liblua51.def',
+        target = 'lua%s' % MAJOR_MINOR,
+        linkflags = '-Wl,--output-def,liblua%s.def' % MAJOR_MINOR,
         defines = [ 'LUA_BUILD_AS_DLL' ],
+        name = 'shared-lua',
+        )
+
+    # create static libluaXY.a
+    bld.stlib(
+        source = lib_sources,
+        target = 'lua%s' % MAJOR_MINOR,
+        name = 'static-lua',
         )
 
     # create Lua interpreter
-    # TODO genericize the version numbers
     bld.program(
         source = '%s/lua.c' % src_root,
         target = 'lua',
         defines = [ 'LUA_BUILD_AS_DLL' ],
-        use = 'lua51',
+        use = 'shared-lua',
         )
 
-# TODO genericize the version numbers
 def package(ctx):
     import zipfile
     with zipfile.ZipFile('%s-%s.zip' % (APPNAME, VERSION), 'w', zipfile.ZIP_DEFLATED) as zip:
-        for f in ['build/liblua51.def', 'build/lua51.dll', 'build/lua.exe']:
+        for f in [ 'build/liblua%s.def' % MAJOR_MINOR, 'build/lua%s.dll' % MAJOR_MINOR, 'build/lua.exe' ]:
             zip.write(f, 'bin/%s' % os.path.basename(f))
-        zip.write('%s/lua.h' % src_root, 'include/lua.h')
-        zip.write('%s/lualib.h' % src_root, 'include/lualib.h')
-        zip.write('%s/lauxlib.h' % src_root, 'include/lauxlib.h')
-        zip.write('build/liblua51.dll.a', 'lib/liblua51.dll.a')
+        for f in [ '%s/lua.h', '%s/lualib.h', '%s/lauxlib.h' ]:
+            zip.write(f % src_root, 'include/%s' % os.path.basename(f))
+        zip.write('build/liblua%s.dll.a' % MAJOR_MINOR, 'lib/liblua%s.dll.a' % MAJOR_MINOR)
 
-# TODO update this for downloading Lua source code
+
+# helper functions
 def _prepare(args):
 
     import urllib2
