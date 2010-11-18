@@ -3,4 +3,5 @@ waf*
 utils/
 build/
 src/
+etc/
 *.zip
