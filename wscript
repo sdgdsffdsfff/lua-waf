@@ -88,8 +88,7 @@ def _prepare(args):
         with closing(urllib2.urlopen(lua['url'])) as f, open(lua['local_name'], 'wb') as u:
             u.write(f.read())
         print('-> downloaded Lua source from %s' % lua['url'])
-        _bsdtar_extract(lua['local_name'])
-
+        _bsdtar_extract(lua['local_name'], 1, '*/src', '*/etc')
     else:
         print('-> using existing Lua source in project directory')
 
@@ -106,13 +105,18 @@ def _zip_extract(zip_file, item, target):
         zip.extract(item, target)
     print('-> extracted %s from %s into %s' % (item, zip_file, target))
 
-def _bsdtar_extract(archive, strip_count=1):
+def _bsdtar_extract(archive, strip_count, *args):
     import subprocess
-    cmd = '-x --strip-components %s --include="*/src" --include="*/etc"' % strip_count
-    if not subprocess.call(r'%s\%s %s -f %s' % (utils_root, bsdtar['exe'], cmd, lua['local_name']), shell=True):
-        pass
+
+    exe = r'%s\%s' % (utils_root, bsdtar['exe'])
+    cmd = '-x --strip-components %s ' % strip_count
+    for a in args:
+        cmd += '--include="%a" ' % a
+
+    if not subprocess.call(r'%s %s -f %s' % (exe, cmd, archive), shell=True):
+        print('-> extracted from %s into %s' % (archive, utils_root))
     else:
-        pass
+        print('-> unable to extract from %s' % archive)
 
 
 if __name__ == '__main__':
