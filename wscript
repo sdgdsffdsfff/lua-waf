@@ -31,9 +31,8 @@ def configure(conf):
     conf.env.CFLAGS = [ '-O3', '-mtune=native', '-march=native' ]
 
     # override gcc defaults normally stored in _cache.py
-    # TODO submit a patch for gcc.py
-    conf.env.SHLIB_MARKER = ''         # '-Wl,-Bdynamic'
-    conf.env.STLIB_MARKER = ''         # '-Wl,-Bstatic'
+    conf.env.SHLIB_MARKER = ''  # '-Wl,-Bdynamic'
+    conf.env.STLIB_MARKER = ''  # '-Wl,-Bstatic'
     conf.env.CFLAGS_cshlib = [ '-Wall', '-O3', '-mtune=native', '-march=native' ]   # ['-DDLL_EXPORT']
 
 def build(bld):
