@@ -73,6 +73,7 @@ def package(ctx):
             zip.write(f, 'bin/%s' % os.path.basename(f))
         for f in [ '%s/lua.h', '%s/lualib.h', '%s/lauxlib.h' ]:
             zip.write(f % src_root, 'include/%s' % os.path.basename(f))
+        zip.write('etc/lua.hpp', 'include/lua.hpp')
         zip.write('build/liblua%s.dll.a' % MAJOR_MINOR, 'lib/liblua%s.dll.a' % MAJOR_MINOR)
 
 
@@ -120,7 +121,7 @@ def _bsdtar_extract(archive, strip_count, *args):
         cmd += '--include="%s" ' % a
 
     if not subprocess.call(r'%s %s -f %s' % (exe, cmd, archive), shell=True):
-        print('-> extracted from %s into %s' % (archive, utils_root))
+        print('-> extracted from %s' % archive)
     else:
         print('-> unable to extract from %s' % archive)
 
