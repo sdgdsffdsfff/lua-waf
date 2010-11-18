@@ -117,7 +117,7 @@ def _bsdtar_extract(archive, strip_count, *args):
     exe = r'%s\%s' % (utils_root, bsdtar['exe'])
     cmd = '-x --strip-components %s ' % strip_count
     for a in args:
-        cmd += '--include="%a" ' % a
+        cmd += '--include="%s" ' % a
 
     if not subprocess.call(r'%s %s -f %s' % (exe, cmd, archive), shell=True):
         print('-> extracted from %s into %s' % (archive, utils_root))
