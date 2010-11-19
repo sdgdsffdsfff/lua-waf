@@ -21,7 +21,6 @@ downloads the Lua source and quickly builds the Lua binaries for use on Windows 
 
 ## TODO
 
-* add build code for `luac.exe` Lua compiler
 * add `clobber` task
 * add `test` task
 * add `llvm-gcc` compiler support

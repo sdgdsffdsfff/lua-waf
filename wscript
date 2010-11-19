@@ -67,6 +67,13 @@ def build(bld):
         use = 'shared-lua',
         )
 
+    # create Lua compiler
+    bld.program(
+        source = [ '%s/luac.c' % src_root, '%s/print.c' % src_root ],
+        target = 'luac',
+        use = 'static-lua',
+        )
+
 def package(ctx):
     import zipfile
     with zipfile.ZipFile('%s-%s.zip' % (APPNAME, VERSION), 'w', zipfile.ZIP_DEFLATED) as zip:
