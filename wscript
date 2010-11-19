@@ -77,12 +77,15 @@ def build(bld):
 def package(ctx):
     import zipfile
     with zipfile.ZipFile('%s-%s.zip' % (APPNAME, VERSION), 'w', zipfile.ZIP_DEFLATED) as zip:
-        for f in [ 'build/liblua%s.def' % MAJOR_MINOR, 'build/lua%s.dll' % MAJOR_MINOR, 'build/lua.exe' ]:
+        for f in [ 'build/lua%s.dll' % MAJOR_MINOR, 'build/lua.exe', 'build/luac.exe' ]:
             zip.write(f, 'bin/%s' % os.path.basename(f))
-        for f in [ '%s/lua.h', '%s/lualib.h', '%s/lauxlib.h' ]:
+        for f in [ '%s/lua.h', '%s/luaconf.h', '%s/lualib.h', '%s/lauxlib.h' ]:
             zip.write(f % src_root, 'include/%s' % os.path.basename(f))
         zip.write('etc/lua.hpp', 'include/lua.hpp')
-        zip.write('build/liblua%s.dll.a' % MAJOR_MINOR, 'lib/liblua%s.dll.a' % MAJOR_MINOR)
+        for f in [ 'build/liblua%s.dll.a' % MAJOR_MINOR,
+                   'build/liblua%s.def' % MAJOR_MINOR,
+                   'build/liblua.a' ]:
+            zip.write(f, 'lib/%s' % os.path.basename(f))
 
 
 # helper functions
