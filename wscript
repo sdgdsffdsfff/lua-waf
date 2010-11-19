@@ -62,6 +62,7 @@ def build(bld):
     bld.program(
         source = '%s/lua.c' % src_root,
         target = 'lua',
+        linkflags = '-s',
         defines = [ 'LUA_BUILD_AS_DLL' ],
         use = 'shared-lua',
         )
