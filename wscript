@@ -51,10 +51,10 @@ def build(bld):
         name = 'shared-lua',
         )
 
-    # create static libluaXY.a
+    # create static liblua.a
     bld.stlib(
         source = lib_sources,
-        target = 'lua%s' % MAJOR_MINOR,
+        target = 'lua',
         name = 'static-lua',
         )
 
