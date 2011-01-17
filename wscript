@@ -6,7 +6,7 @@ import os.path
 import shutil
 import sys
 
-PY_MIN_VERSION = 0x020700F0
+PY_MIN_VERSION = (2, 7, 0)
 WAF_VERSION = '1.6.2'
 BSDTAR_FILE = 'basic-bsdtar-2.8.3-1-mingw32-bin.zip'
 
@@ -138,11 +138,9 @@ def _bsdtar_extract(archive, strip_count, *args):
 
 
 if __name__ == '__main__':
-    if sys.hexversion < PY_MIN_VERSION:
-        print('At least Python v%d.%d.%d required, exiting...' % (
-                (PY_MIN_VERSION & 0xF000000) >> 24,
-                (PY_MIN_VERSION & 0x00F0000) >> 16,
-                (PY_MIN_VERSION & 0x0000F00) >> 8))
+    if sys.version_info < PY_MIN_VERSION:
+        print('At least Python v%d.%d.%d required, exiting...' %
+            (PY_MIN_VERSION[0], PY_MIN_VERSION[1], PY_MIN_VERSION[2]))
         sys.exit(1)
 
     args = sys.argv
