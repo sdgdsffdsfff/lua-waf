@@ -21,12 +21,13 @@ utils_root = 'utils'
 
 def options(opt):
     opt.load('compiler_c')
+    opt.add_option('--arch', action='store', default='x86',
+       help='Select target architecture (ia64, x64, x86, x86_amd64, x86_ia64)')
 
 # TODO how to use for llvm-gcc, llvm-cpp which uses ar, ranlib, as,
 #      windres, ld, dlltool, dllwrap, etc from MinGW binutils pkg?
 def configure(conf):
 
-    print('-> use --check-c-compiler=gcc to use gcc for compile/link')
     conf.load('compiler_c')
 
     conf.env.CFLAGS = [ '-O3', '-mtune=native', '-march=native' ]
