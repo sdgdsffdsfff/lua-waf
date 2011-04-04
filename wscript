@@ -27,7 +27,6 @@ def options(opt):
 # TODO how to use for llvm-gcc, llvm-cpp which uses ar, ranlib, as,
 #      windres, ld, dlltool, dllwrap, etc from MinGW binutils pkg?
 def configure(conf):
-
     conf.load('compiler_c')
 
     conf.env.CFLAGS = [ '-O3', '-mtune=native', '-march=native' ]
@@ -97,25 +96,25 @@ def _prepare(args):
 
     # download utilities if not already present
     if not os.path.exists(utils_root):
-        with closing(urllib2.urlopen(bsdtar['url'])) as f, open(bsdtar['local_name'], 'wb') as b:
+        with closing(urllib2.urlopen(bsdtar.url)) as f, open(bsdtar.local_name, 'wb') as b:
             b.write(f.read())
-        print('-> downloaded basic-bsdtar from %s' % bsdtar['url'])
-        _zip_extract(bsdtar['local_name'], bsdtar['exe'], utils_root)
+        print('-> downloaded basic-bsdtar from %s' % bsdtar.url)
+        _zip_extract(bsdtar.local_name, bsdtar.exe, utils_root)
 
     # download and extract Lua source if local source directory (src_root) is empty
     if not os.path.exists(src_root) or not os.listdir(src_root):
-        with closing(urllib2.urlopen(lua['url'])) as f, open(lua['local_name'], 'wb') as u:
+        with closing(urllib2.urlopen(lua.url)) as f, open(lua.local_name, 'wb') as u:
             u.write(f.read())
-        print('-> downloaded Lua source from %s' % lua['url'])
-        _bsdtar_extract(lua['local_name'], 1, '*/src', '*/etc')
+        print('-> downloaded Lua source from %s' % lua.url)
+        _bsdtar_extract(lua.local_name, 1, '*/src', '*/etc')
     else:
         print('-> using existing Lua source in project directory')
 
     # download waf if not already present
     if not os.path.exists('waf'):
-        with closing(urllib2.urlopen(waf['url'])) as f, open('waf', 'wb') as w:
+        with closing(urllib2.urlopen(waf.url)) as f, open('waf', 'wb') as w:
             w.write(f.read())
-        print('-> downloaded waf from %s' % waf['url'])
+        print('-> downloaded waf from %s' % waf.url)
 
 
 def _zip_extract(zip_file, item, target):
@@ -127,7 +126,7 @@ def _zip_extract(zip_file, item, target):
 def _bsdtar_extract(archive, strip_count, *args):
     import subprocess
 
-    exe = r'%s\%s' % (utils_root, bsdtar['exe'])
+    exe = r'%s\%s' % (utils_root, bsdtar.exe)
     cmd = '-x --strip-components %s ' % strip_count
     for a in args:
         cmd += '--include="%s" ' % a
@@ -144,7 +143,12 @@ if __name__ == '__main__':
             (PY_MIN_VERSION[0], PY_MIN_VERSION[1], PY_MIN_VERSION[2]))
         sys.exit(1)
 
-    args = sys.argv
+    class ResourceInfo(object):
+        def __init__(self, **kwargs):
+            for i in kwargs.iteritems():
+                setattr(self, i[0], i[1])
+
+    args = sys.argv[:]
 
     TASKS = ('prepare',)
     USAGE = '''usage: python wscript TASK [OPTION]
@@ -157,20 +161,20 @@ where TASK is one of:
         print(USAGE)
         sys.exit(1)
 
-    bsdtar = {
-                'url' : 'http://downloads.sourceforge.net/mingw/%s' % BSDTAR_FILE,
-                'local_name' : 'basic-bsdtar.zip',
-                'exe' : 'basic-bsdtar.exe',
-             }
+    bsdtar = ResourceInfo(
+        url = 'http://downloads.sourceforge.net/mingw/%s' % BSDTAR_FILE,
+        local_name = 'basic-bsdtar.zip',
+        exe = 'basic-bsdtar.exe'
+        )
 
-    lua = {
-            'url' : 'http://www.lua.org/ftp/lua-%s.tar.gz' % VERSION,
-            'local_name' : 'lua-%s.tar.gz' % VERSION,
-          }
+    lua = ResourceInfo(
+        url = 'http://www.lua.org/ftp/lua-%s.tar.gz' % VERSION,
+        local_name = 'lua-%s.tar.gz' % VERSION
+        )
 
-    waf = {
-            'url' : 'http://waf.googlecode.com/files/waf-%s' % WAF_VERSION,
-          }
+    waf = ResourceInfo(
+        url = 'http://waf.googlecode.com/files/waf-%s' % WAF_VERSION
+        )
 
     task = args[1].lower()
 
