@@ -71,6 +71,7 @@ def build(bld):
     bld.program(
         source = [ '%s/luac.c' % src_root, '%s/print.c' % src_root ],
         target = 'luac',
+        linkflags = '-static -s',
         use = 'static-lua',
         )
 
