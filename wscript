@@ -54,7 +54,7 @@ def build(bld):
     # create static liblua.a
     bld.stlib(
         source = lib_sources,
-        target = 'lua',
+        target = 'lua%s' % MAJOR_MINOR,
         name = 'static-lua',
         )
 
@@ -85,7 +85,7 @@ def package(ctx):
         zip.write('etc/lua.hpp', 'include/lua.hpp')
         for f in [ 'build/liblua%s.dll.a' % MAJOR_MINOR,
                    'build/liblua%s.def' % MAJOR_MINOR,
-                   'build/liblua.a' ]:
+                   'build/liblua%s.a' % MAJOR_MINOR ]:
             zip.write(f, 'lib/%s' % os.path.basename(f))
 
 
