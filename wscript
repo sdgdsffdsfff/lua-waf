@@ -76,6 +76,7 @@ def build(bld):
         )
 
 def package(ctx):
+    '''package built Lua into a zip file'''
     import zipfile
     with zipfile.ZipFile('%s-%s.zip' % (APPNAME, VERSION), 'w', zipfile.ZIP_DEFLATED) as zip:
         for f in [ 'build/lua%s.dll' % MAJOR_MINOR, 'build/lua.exe', 'build/luac.exe' ]:
