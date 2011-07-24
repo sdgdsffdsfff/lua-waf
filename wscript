@@ -11,7 +11,7 @@ WAF_VERSION = '1.6.6'
 BSDTAR_FILE = 'basic-bsdtar-2.8.3-1-mingw32-bin.zip'
 
 APPNAME = 'lua'
-VERSION = '5.1.4'
+VERSION = '5.2.0-beta'
 MAJOR_MINOR = VERSION.translate(None, '.')[:2]
 
 top = '.'
@@ -69,13 +69,14 @@ def build(bld):
 
     # create Lua compiler
     bld.program(
-        source = [ '%s/luac.c' % src_root, '%s/print.c' % src_root ],
+        source = [ '%s/luac.c' % src_root ],
         target = 'luac',
         linkflags = '-static -s',
         use = 'static-lua',
         )
 
 def package(ctx):
+    '''package built Lua into a zip file'''
     import zipfile
     with zipfile.ZipFile('%s-%s.zip' % (APPNAME, VERSION), 'w', zipfile.ZIP_DEFLATED) as zip:
         for f in [ 'build/lua%s.dll' % MAJOR_MINOR, 'build/lua.exe', 'build/luac.exe' ]:
