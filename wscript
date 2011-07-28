@@ -81,9 +81,9 @@ def package(ctx):
     with zipfile.ZipFile('%s-%s.zip' % (APPNAME, VERSION), 'w', zipfile.ZIP_DEFLATED) as zip:
         for f in [ 'build/lua%s.dll' % MAJOR_MINOR, 'build/lua.exe', 'build/luac.exe' ]:
             zip.write(f, 'bin/%s' % os.path.basename(f))
-        for f in [ '%s/lua.h', '%s/luaconf.h', '%s/lualib.h', '%s/lauxlib.h' ]:
+        for f in [ '%s/lua.h', '%s/luaconf.h', '%s/lualib.h', '%s/lauxlib.h', '%s/lua.hpp' ]:
             zip.write(f % src_root, 'include/%s' % os.path.basename(f))
-        zip.write('etc/lua.hpp', 'include/lua.hpp')
+        #zip.write('etc/lua.hpp', 'include/lua.hpp')
         for f in [ 'build/liblua%s.dll.a' % MAJOR_MINOR,
                    'build/liblua%s.def' % MAJOR_MINOR,
                    'build/liblua%s.a' % MAJOR_MINOR ]:
@@ -108,7 +108,7 @@ def _prepare(args):
         with closing(urllib2.urlopen(lua.url)) as f, open(lua.local_name, 'wb') as u:
             u.write(f.read())
         print('-> downloaded Lua source from %s' % lua.url)
-        _bsdtar_extract(lua.local_name, 1, '*/src', '*/etc')
+        _bsdtar_extract(lua.local_name, 1, '*/src')
     else:
         print('-> using existing Lua source in project directory')
 
@@ -169,8 +169,9 @@ where TASK is one of:
         exe = 'basic-bsdtar.exe'
         )
 
+    url_base = 'http://www.lua.org/ftp' if len(VERSION.split('-')) == 1 else 'http://www.lua.org/work'
     lua = ResourceInfo(
-        url = 'http://www.lua.org/ftp/lua-%s.tar.gz' % VERSION,
+        url = '%s/lua-%s.tar.gz' % (url_base, VERSION),
         local_name = 'lua-%s.tar.gz' % VERSION
         )
 
