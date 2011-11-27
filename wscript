@@ -7,7 +7,7 @@ import shutil
 import sys
 
 PY_MIN_VERSION = (2, 7, 0)
-WAF_VERSION = '1.6.8'
+WAF_VERSION = '1.6.9'
 BSDTAR_FILE = 'basic-bsdtar-2.8.3-1-mingw32-bin.zip'
 
 APPNAME = 'lua'
