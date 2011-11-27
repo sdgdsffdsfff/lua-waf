@@ -112,11 +112,15 @@ def _prepare(args):
     else:
         print('-> using existing Lua source in project directory')
 
-    # download waf if not already present
+    # download waf if not already present and make executable if not on Windows
     if not os.path.exists('waf'):
         with closing(urllib2.urlopen(waf.url)) as f, open('waf', 'wb') as w:
             w.write(f.read())
+        if not hasattr(sys, 'winver'):
+            os.chmod('waf', 0755)
         print('-> downloaded waf from %s' % waf.url)
+    else:
+        print('-> nothing to download; using existing waf library')
 
 
 def _zip_extract(zip_file, item, target):
