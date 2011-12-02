@@ -29,12 +29,12 @@ def options(opt):
 def configure(conf):
     conf.load('compiler_c')
 
-    conf.env.CFLAGS = [ '-O3', '-mtune=native', '-march=native' ]
-
-    # override gcc defaults normally stored in _cache.py
-    conf.env.SHLIB_MARKER = ''  # '-Wl,-Bdynamic'
-    conf.env.STLIB_MARKER = ''  # '-Wl,-Bstatic'
-    conf.env.CFLAGS_cshlib = [ '-Wall', '-O3', '-mtune=native', '-march=native' ]   # ['-DDLL_EXPORT']
+    # override gcc defaults stored in _cache.py
+    if conf.env.CC_NAME in ('gcc'):
+        conf.env.SHLIB_MARKER = ''     # '-Wl,-Bdynamic'
+        conf.env.STLIB_MARKER = ''     # '-Wl,-Bstatic'
+        conf.env.CFLAGS_cshlib = ['']  # ['-DDLL_EXPORT']
+        conf.env.LINKFLAGS = ['']      # ['-Wl,--enable-auto-import']
 
 def build(bld):
     lib_sources = bld.path.ant_glob(
@@ -42,11 +42,25 @@ def build(bld):
                     excl=[ '%s/lua.c' % src_root, '%s/luac.c' % src_root ]
                     )
 
+    if bld.env.CC_NAME == 'msvc':
+        my_cflags = [ '/O2', '/W2', '/MD' ]
+        my_dll_lflags = []
+        my_exe_lflags = []
+        my_static_exe_lflags = []
+        bld.env.STLIB_ST = '%s-static.lib'
+        bld.env.cstlib_PATTERN = '%s-static.lib'
+    else:
+        my_cflags = [ '-Wall', '-O3', '-mtune=native', '-march=native' ]
+        my_dll_lflags = [ '-Wl,--output-def,liblua%s.def' % MAJOR_MINOR ]
+        my_exe_lflags = [ '-s' ]
+        my_static_exe_lflags = [ '-static', '-s' ]
+
     # create luaXY.dll and its import lib and def files
     bld.shlib(
         source = lib_sources,
         target = 'lua%s' % MAJOR_MINOR,
-        linkflags = '-Wl,--output-def,liblua%s.def' % MAJOR_MINOR,
+        cflags = my_cflags,
+        linkflags = my_dll_lflags,
         defines = [ 'LUA_BUILD_AS_DLL' ],
         name = 'shared-lua',
         )
@@ -55,6 +69,7 @@ def build(bld):
     bld.stlib(
         source = lib_sources,
         target = 'lua%s' % MAJOR_MINOR,
+        cflags = my_cflags,
         name = 'static-lua',
         )
 
@@ -62,7 +77,8 @@ def build(bld):
     bld.program(
         source = '%s/lua.c' % src_root,
         target = 'lua',
-        linkflags = '-s',
+        cflags = my_cflags,
+        linkflags = my_exe_lflags,
         defines = [ 'LUA_BUILD_AS_DLL' ],
         use = 'shared-lua',
         )
@@ -71,7 +87,8 @@ def build(bld):
     bld.program(
         source = [ '%s/luac.c' % src_root ],
         target = 'luac',
-        linkflags = '-static -s',
+        cflags = my_cflags,
+        linkflags = my_static_exe_lflags,
         use = 'static-lua',
         )
 
