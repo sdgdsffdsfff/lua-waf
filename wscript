@@ -11,7 +11,7 @@ WAF_VERSION = '1.6.9'
 BSDTAR_FILE = 'basic-bsdtar-2.8.3-1-mingw32-bin.zip'
 
 APPNAME = 'lua'
-VERSION = '5.2.0-rc4'
+VERSION = '5.2.0-rc5'
 MAJOR_MINOR = VERSION.translate(None, '.')[:2]
 
 top = '.'
@@ -92,6 +92,7 @@ def build(bld):
         use = 'static-lua',
         )
 
+# TODO fix for msvc builds (artifacts and artifact naming)
 def package(ctx):
     '''package built Lua into a zip file'''
     import zipfile
