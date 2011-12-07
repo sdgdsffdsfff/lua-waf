@@ -11,7 +11,7 @@ WAF_VERSION = '1.6.9'
 BSDTAR_FILE = 'basic-bsdtar-2.8.3-1-mingw32-bin.zip'
 
 APPNAME = 'lua'
-VERSION = '5.2.0-rc5'
+VERSION = '5.2.0-rc6'
 MAJOR_MINOR = VERSION.translate(None, '.')[:2]
 
 top = '.'
@@ -101,7 +101,6 @@ def package(ctx):
             zip.write(f, 'bin/%s' % os.path.basename(f))
         for f in [ '%s/lua.h', '%s/luaconf.h', '%s/lualib.h', '%s/lauxlib.h', '%s/lua.hpp' ]:
             zip.write(f % src_root, 'include/%s' % os.path.basename(f))
-        #zip.write('etc/lua.hpp', 'include/lua.hpp')
         for f in [ 'build/liblua%s.dll.a' % MAJOR_MINOR,
                    'build/liblua%s.def' % MAJOR_MINOR,
                    'build/liblua%s.a' % MAJOR_MINOR ]:
