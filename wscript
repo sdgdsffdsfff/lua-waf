@@ -108,15 +108,19 @@ def package(ctx):
 
 # helper functions
 def _pristine(args):
-    print('-> reverting to pristine state')
-
     # TODO remove waf and waf lib artifacts
     #      move to a waf command and chain to distclean?
     import shutil
-    shutil.rmtree(src_root, True)
-    shutil.rmtree(out, True)
-    shutil.rmtree(utils_root, True)
-    os.remove(lua.local_name)
+
+    for d in [ src_root, out, utils_root  ]:
+        if os.path.exists(d):
+            print('-> deleting tree: %s' % d)
+            shutil.rmtree(d, True)
+
+    for f in [ lua.local_name, bsdtar.local_name ]:
+        if os.path.exists(f):
+            print('-> deleting file: %s' % f)
+            os.remove(f)
 
 def _prepare(args):
 
