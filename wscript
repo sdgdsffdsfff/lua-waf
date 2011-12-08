@@ -3,7 +3,6 @@
 
 import os
 import os.path
-import shutil
 import sys
 
 PY_MIN_VERSION = (2, 7, 0)
@@ -108,6 +107,17 @@ def package(ctx):
 
 
 # helper functions
+def _pristine(args):
+    print('-> reverting to pristine state')
+
+    # TODO remove waf and waf lib artifacts
+    #      move to a waf command and chain to distclean?
+    import shutil
+    shutil.rmtree(src_root, True)
+    shutil.rmtree(out, True)
+    shutil.rmtree(utils_root, True)
+    os.remove(lua.local_name)
+
 def _prepare(args):
 
     import urllib2
@@ -173,11 +183,12 @@ if __name__ == '__main__':
 
     args = sys.argv[:]
 
-    TASKS = ('prepare',)
+    TASKS = ('prepare', 'pristine')
     USAGE = '''usage: python wscript TASK [OPTION]
 
 where TASK is one of:
   prepare   prepare current dir for building Lua
+  pristine  remove all downloaded/built artifacts
 '''
 
     if len(args) != 2 or args[1].lower() not in TASKS:
@@ -204,5 +215,7 @@ where TASK is one of:
 
     if task == 'prepare':
         _prepare(args)
+    elif task == 'pristine':
+        _pristine(args)
 
 # vim: ft=python ai ts=4 sw=4 sts=4 et
