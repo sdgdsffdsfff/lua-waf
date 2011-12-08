@@ -31,7 +31,8 @@ downloads the Lua source and quickly builds the Lua binaries for use on Windows 
 6. `python waf` to build
 7. `python waf clean build` to rebuild
 8. `python waf build package` (build and zip the dll, static library, headers, def, and implib)
-9. `python waf distclean` to clean everything and revert to a pristine state
+9. `python waf distclean` to remove the build directory and build lock files
+10. `python wscript pristine` to delete all downloaded and built artifacts
 
 ## TODO
 
