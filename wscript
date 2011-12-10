@@ -91,25 +91,45 @@ def build(bld):
         use = 'static-lua',
         )
 
-# TODO fix for msvc builds (artifacts and artifact naming)
 def package(ctx):
-    '''package built Lua into a zip file'''
+    '''packages Lua binaries and dev artifacts into a zip file'''
+
     import zipfile
+    from waflib import Build, ConfigSet
+
+    cfg_node = ctx.path.find_node(os.path.join(out, Build.CACHE_DIR, Build.CACHE_SUFFIX))
+    if not cfg_node:
+        ctx.fatal('The project is not configured: run "waf configure"')
+    ctx.env = ConfigSet.ConfigSet()
+    ctx.env.load(cfg_node.abspath())
+
+    bin_files = [ 'build/lua%s.dll' % MAJOR_MINOR, 'build/lua.exe', 'build/luac.exe' ]
+    if not os.path.exists(bin_files[0]):
+        ctx.fatal('The project has not been built: run "waf build"')
+
+    if ctx.env.CC_NAME == 'msvc':
+        bin_files.extend(['build/lua%s.dll.manifest' % MAJOR_MINOR,
+                          'build/lua.exe.manifest', 'build/luac.exe.manifest' ])
+        lib_files = [ 'build/lua%s.exp' % MAJOR_MINOR,
+                      'build/lua%s.lib' % MAJOR_MINOR,
+                      'build/lua%s-static.lib' % MAJOR_MINOR ]
+    else:
+        lib_files = [ 'build/liblua%s.dll.a' % MAJOR_MINOR,
+                      'build/liblua%s.def' % MAJOR_MINOR,
+                      'build/liblua%s.a' % MAJOR_MINOR ]
+
     with zipfile.ZipFile('%s-%s.zip' % (APPNAME, VERSION), 'w', zipfile.ZIP_DEFLATED) as zip:
-        for f in [ 'build/lua%s.dll' % MAJOR_MINOR, 'build/lua.exe', 'build/luac.exe' ]:
+        for f in bin_files:
             zip.write(f, 'bin/%s' % os.path.basename(f))
         for f in [ '%s/lua.h', '%s/luaconf.h', '%s/lualib.h', '%s/lauxlib.h', '%s/lua.hpp' ]:
             zip.write(f % src_root, 'include/%s' % os.path.basename(f))
-        for f in [ 'build/liblua%s.dll.a' % MAJOR_MINOR,
-                   'build/liblua%s.def' % MAJOR_MINOR,
-                   'build/liblua%s.a' % MAJOR_MINOR ]:
+        for f in lib_files:
             zip.write(f, 'lib/%s' % os.path.basename(f))
 
 
 # helper functions
 def _pristine(args):
     # TODO remove waf and waf lib artifacts
-    #      move to a waf command and chain to distclean?
     import shutil
 
     for d in [ src_root, out, utils_root  ]:
@@ -123,7 +143,6 @@ def _pristine(args):
             os.remove(f)
 
 def _prepare(args):
-
     import urllib2
     from contextlib import closing
 
@@ -151,7 +170,7 @@ def _prepare(args):
             os.chmod('waf', 0755)
         print('-> downloaded waf from %s' % waf.url)
     else:
-        print('-> nothing to download; using existing waf library')
+        print('-> using existing waf library')
 
 
 def _zip_extract(zip_file, item, target):
