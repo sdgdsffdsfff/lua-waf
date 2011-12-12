@@ -36,7 +36,5 @@ downloads the Lua source and quickly builds the Lua binaries for use on Windows 
 
 ## TODO
 
-* add `clobber` task
 * add `test` task
-* add `llvm-gcc` compiler support
 * add binary downloads
