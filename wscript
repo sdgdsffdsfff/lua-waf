@@ -95,13 +95,6 @@ def package(ctx):
     '''packages Lua binaries and dev artifacts into a zip file'''
 
     import zipfile
-    from waflib import Build, ConfigSet
-
-    cfg_node = ctx.path.find_node(os.path.join(out, Build.CACHE_DIR, Build.CACHE_SUFFIX))
-    if not cfg_node:
-        ctx.fatal('The project is not configured: run "waf configure"')
-    ctx.env = ConfigSet.ConfigSet()
-    ctx.env.load(cfg_node.abspath())
 
     bin_files = [ 'build/lua%s.dll' % MAJOR_MINOR, 'build/lua.exe', 'build/luac.exe' ]
     if not os.path.exists(bin_files[0]):
@@ -125,6 +118,13 @@ def package(ctx):
             zip.write(f % src_root, 'include/%s' % os.path.basename(f))
         for f in lib_files:
             zip.write(f, 'lib/%s' % os.path.basename(f))
+
+
+# custom waf helpers
+from waflib.Build import BuildContext
+class PackageContext(BuildContext):
+    cmd = 'package'
+    fun = 'package'
 
 
 # helper functions
