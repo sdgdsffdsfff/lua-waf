@@ -10,7 +10,7 @@ WAF_VERSION = '1.6.9'
 BSDTAR_FILE = 'basic-bsdtar-2.8.3-1-mingw32-bin.zip'
 
 APPNAME = 'lua'
-VERSION = '5.2.0-rc8'
+VERSION = '5.2.0'
 MAJOR_MINOR = VERSION.translate(None, '.')[:2]
 
 top = '.'
@@ -121,6 +121,7 @@ def package(ctx):
 
 
 # custom waf helpers
+# FIXME breaks any `python wscript ...` invocation :(
 from waflib.Build import BuildContext
 class PackageContext(BuildContext):
     cmd = 'package'
