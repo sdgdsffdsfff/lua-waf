@@ -122,10 +122,11 @@ def package(ctx):
 
 # custom waf helpers
 # FIXME breaks any `python wscript ...` invocation :(
-from waflib.Build import BuildContext
-class PackageContext(BuildContext):
-    cmd = 'package'
-    fun = 'package'
+if not __name__ == '__main__':
+    from waflib.Build import BuildContext
+    class PackageContext(BuildContext):
+        cmd = 'package'
+        fun = 'package'
 
 
 # helper functions
