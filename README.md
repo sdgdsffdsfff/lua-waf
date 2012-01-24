@@ -25,7 +25,6 @@ downloads the Lua source and quickly builds the Lua binaries for use on Windows 
    into `<your_build_dir>`
 3. `cd <your_build_dir>`
 4. *[optional]* `python wscript prepare` (if waf and Lua source not already in `<your_build_dir>/src`)
-5. `python waf configure --check-c-compiler=gcc`
 5. **Windows SDK:** `python waf configure --msvc_version="wsdk 7.1" --msvc_targets="x86"` or
    **MinGW:** `python waf configure --check-c-compiler=gcc`
 6. `python waf` to build
