@@ -6,7 +6,7 @@ import os.path
 import sys
 
 PY_MIN_VERSION = (2, 7, 0)
-WAF_VERSION = '1.6.10'
+WAF_VERSION = '1.6.11'
 BSDTAR_FILE = 'basic-bsdtar-2.8.3-1-mingw32-bin.zip'
 
 APPNAME = 'lua'
@@ -174,12 +174,14 @@ def _prepare(args):
         print('-> using existing waf library')
 
 
+# TODO abstract for *nix
 def _zip_extract(zip_file, item, target):
     import zipfile
     with zipfile.ZipFile(zip_file, 'r') as zip:
         zip.extract(item, target)
     print('-> extracted %s from %s into %s' % (item, zip_file, target))
 
+# TODO abstract for *nix
 def _bsdtar_extract(archive, strip_count, *args):
     import subprocess
 
