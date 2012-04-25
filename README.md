@@ -16,7 +16,7 @@ downloads the Lua source and quickly builds the Lua binaries for use on Windows 
 1. When building with VC++ or the Windows SDK, waf will select the build environment
    based upon it's `--msvc_version` and `--msvc_targets` command line options. When
    building with a MinGW toolchain, ensure it's on your `PATH` and use waf's
-   `--check-cxx-compiler` command line option. If you choose to build with MinGW, I
+   `--check-c-compiler` command line option. If you choose to build with MinGW, I
    encourage you to use the [DevKit](https://github.com/oneclick/rubyinstaller/wiki/Development-Kit).
    While my instructions and install script at that link are specific to Ruby, you
    can simply run the `devkitvars.bat` or `devkitvars.ps1` scripts to bring the
