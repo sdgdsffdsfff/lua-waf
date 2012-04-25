@@ -3,11 +3,10 @@
 
 import os
 import os.path
-import shutil
 import sys
 
 PY_MIN_VERSION = (2, 7, 0)
-WAF_VERSION = '1.6.9'
+WAF_VERSION = '1.6.11'
 BSDTAR_FILE = 'basic-bsdtar-2.8.3-1-mingw32-bin.zip'
 
 APPNAME = 'lua'
@@ -29,12 +28,12 @@ def options(opt):
 def configure(conf):
     conf.load('compiler_c')
 
-    conf.env.CFLAGS = [ '-O3', '-mtune=native', '-march=native' ]
-
-    # override gcc defaults normally stored in _cache.py
-    conf.env.SHLIB_MARKER = ''  # '-Wl,-Bdynamic'
-    conf.env.STLIB_MARKER = ''  # '-Wl,-Bstatic'
-    conf.env.CFLAGS_cshlib = [ '-Wall', '-O3', '-mtune=native', '-march=native' ]   # ['-DDLL_EXPORT']
+    # override gcc defaults stored in _cache.py
+    if conf.env.CC_NAME in ('gcc'):
+        conf.env.SHLIB_MARKER = ''     # '-Wl,-Bdynamic'
+        conf.env.STLIB_MARKER = ''     # '-Wl,-Bstatic'
+        conf.env.CFLAGS_cshlib = ['']  # ['-DDLL_EXPORT']
+        conf.env.LINKFLAGS = ['']      # ['-Wl,--enable-auto-import']
 
 def build(bld):
     lib_sources = bld.path.ant_glob(
@@ -42,11 +41,25 @@ def build(bld):
                     excl=[ '%s/lua.c' % src_root, '%s/luac.c' % src_root ]
                     )
 
+    if bld.env.CC_NAME == 'msvc':
+        my_cflags = [ '/O2', '/W2', '/MD' ]
+        my_dll_lflags = []
+        my_exe_lflags = []
+        my_static_exe_lflags = []
+        bld.env.STLIB_ST = '%s-static.lib'
+        bld.env.cstlib_PATTERN = '%s-static.lib'
+    else:
+        my_cflags = [ '-Wall', '-O3', '-mtune=native', '-march=native' ]
+        my_dll_lflags = [ '-Wl,--output-def,liblua%s.def' % MAJOR_MINOR ]
+        my_exe_lflags = [ '-s' ]
+        my_static_exe_lflags = [ '-static', '-s' ]
+
     # create luaXY.dll and its import lib and def files
     bld.shlib(
         source = lib_sources,
         target = 'lua%s' % MAJOR_MINOR,
-        linkflags = '-Wl,--output-def,liblua%s.def' % MAJOR_MINOR,
+        cflags = my_cflags,
+        linkflags = my_dll_lflags,
         defines = [ 'LUA_BUILD_AS_DLL' ],
         name = 'shared-lua',
         )
@@ -55,6 +68,7 @@ def build(bld):
     bld.stlib(
         source = lib_sources,
         target = 'lua%s' % MAJOR_MINOR,
+        cflags = my_cflags,
         name = 'static-lua',
         )
 
@@ -62,7 +76,8 @@ def build(bld):
     bld.program(
         source = '%s/lua.c' % src_root,
         target = 'lua',
-        linkflags = '-s',
+        cflags = my_cflags,
+        linkflags = my_exe_lflags,
         defines = [ 'LUA_BUILD_AS_DLL' ],
         use = 'shared-lua',
         )
@@ -71,28 +86,65 @@ def build(bld):
     bld.program(
         source = [ '%s/luac.c' % src_root, '%s/print.c' % src_root ],
         target = 'luac',
-        linkflags = '-static -s',
+        cflags = my_cflags,
+        linkflags = my_static_exe_lflags,
         use = 'static-lua',
         )
 
 def package(ctx):
-    '''package built Lua into a zip file'''
+    '''packages Lua binaries and dev artifacts into a zip file'''
+
     import zipfile
+
+    bin_files = [ 'build/lua%s.dll' % MAJOR_MINOR, 'build/lua.exe', 'build/luac.exe' ]
+    if not os.path.exists(bin_files[0]):
+        ctx.fatal('The project has not been built: run "waf build"')
+
+    if ctx.env.CC_NAME == 'msvc':
+        bin_files.extend(['build/lua%s.dll.manifest' % MAJOR_MINOR,
+                          'build/lua.exe.manifest', 'build/luac.exe.manifest' ])
+        lib_files = [ 'build/lua%s.exp' % MAJOR_MINOR,
+                      'build/lua%s.lib' % MAJOR_MINOR,
+                      'build/lua%s-static.lib' % MAJOR_MINOR ]
+    else:
+        lib_files = [ 'build/liblua%s.dll.a' % MAJOR_MINOR,
+                      'build/liblua%s.def' % MAJOR_MINOR,
+                      'build/liblua%s.a' % MAJOR_MINOR ]
+
     with zipfile.ZipFile('%s-%s.zip' % (APPNAME, VERSION), 'w', zipfile.ZIP_DEFLATED) as zip:
-        for f in [ 'build/lua%s.dll' % MAJOR_MINOR, 'build/lua.exe', 'build/luac.exe' ]:
+        for f in bin_files:
             zip.write(f, 'bin/%s' % os.path.basename(f))
         for f in [ '%s/lua.h', '%s/luaconf.h', '%s/lualib.h', '%s/lauxlib.h' ]:
             zip.write(f % src_root, 'include/%s' % os.path.basename(f))
         zip.write('etc/lua.hpp', 'include/lua.hpp')
-        for f in [ 'build/liblua%s.dll.a' % MAJOR_MINOR,
-                   'build/liblua%s.def' % MAJOR_MINOR,
-                   'build/liblua%s.a' % MAJOR_MINOR ]:
+        for f in lib_files:
             zip.write(f, 'lib/%s' % os.path.basename(f))
 
 
-# helper functions
-def _prepare(args):
+# custom waf helpers
+if not __name__ == '__main__':
+    from waflib.Build import BuildContext
+    class PackageContext(BuildContext):
+        cmd = 'package'
+        fun = 'package'
 
+
+# helper functions
+def _pristine(args):
+    # TODO remove waf and waf lib artifacts
+    import shutil
+
+    for d in [ src_root, out, utils_root  ]:
+        if os.path.exists(d):
+            print('-> deleting tree: %s' % d)
+            shutil.rmtree(d, True)
+
+    for f in [ lua.local_name, bsdtar.local_name ]:
+        if os.path.exists(f):
+            print('-> deleting file: %s' % f)
+            os.remove(f)
+
+def _prepare(args):
     import urllib2
     from contextlib import closing
 
@@ -112,7 +164,7 @@ def _prepare(args):
     else:
         print('-> using existing Lua source in project directory')
 
-    # download waf if not already present
+    # download waf if not already present and make executable if not on Windows
     if not os.path.exists('waf'):
         with closing(urllib2.urlopen(waf.url)) as f, open('waf', 'wb') as w:
             w.write(f.read())
@@ -120,16 +172,17 @@ def _prepare(args):
             os.chmod('waf', 0755)
         print('-> downloaded waf from %s' % waf.url)
     else:
-        print('-> nothing to download; using existing waf library')
+        print('-> using existing waf library')
 
 
-
+# TODO abstract for *nix
 def _zip_extract(zip_file, item, target):
     import zipfile
     with zipfile.ZipFile(zip_file, 'r') as zip:
         zip.extract(item, target)
     print('-> extracted %s from %s into %s' % (item, zip_file, target))
 
+# TODO abstract for *nix
 def _bsdtar_extract(archive, strip_count, *args):
     import subprocess
 
@@ -157,11 +210,12 @@ if __name__ == '__main__':
 
     args = sys.argv[:]
 
-    TASKS = ('prepare',)
+    TASKS = ('prepare', 'pristine')
     USAGE = '''usage: python wscript TASK [OPTION]
 
 where TASK is one of:
   prepare   prepare current dir for building Lua
+  pristine  remove all downloaded/built artifacts
 '''
 
     if len(args) != 2 or args[1].lower() not in TASKS:
@@ -174,8 +228,9 @@ where TASK is one of:
         exe = 'basic-bsdtar.exe'
         )
 
+    url_base = 'http://www.lua.org/ftp' if len(VERSION.split('-')) == 1 else 'http://www.lua.org/work'
     lua = ResourceInfo(
-        url = 'http://www.lua.org/ftp/lua-%s.tar.gz' % VERSION,
+        url = '%s/lua-%s.tar.gz' % (url_base, VERSION),
         local_name = 'lua-%s.tar.gz' % VERSION
         )
 
@@ -187,5 +242,7 @@ where TASK is one of:
 
     if task == 'prepare':
         _prepare(args)
+    elif task == 'pristine':
+        _pristine(args)
 
 # vim: ft=python ai ts=4 sw=4 sts=4 et
