@@ -24,6 +24,7 @@ for use on Windows systems.
    `PATH` to enable its use as a general purpose MinGW-based toolchain.
 2. Download one of the following project archives and extract into `<your_build_dir>`:
    [master](http://github.com/jonforums/lua-waf/zipball/master)
+   [5.2.1](http://github.com/jonforums/lua-waf/zipball/5.2.1)
    [5.2.0](http://github.com/jonforums/lua-waf/zipball/5.2.0)
    [5.1.5](http://github.com/jonforums/lua-waf/zipball/5.1.5)
    [5.1.4](http://github.com/jonforums/lua-waf/zipball/5.1.4)
