@@ -10,7 +10,7 @@ WAF_VERSION = '1.7.4'
 BSDTAR_FILE = 'basic-bsdtar-2.8.3-1-mingw32-bin.zip'
 
 APPNAME = 'lua'
-VERSION = '5.2.0'
+VERSION = '5.2.1'
 MAJOR_MINOR = VERSION.translate(None, '.')[:2]
 
 top = '.'
